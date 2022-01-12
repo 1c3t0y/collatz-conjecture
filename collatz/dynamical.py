@@ -1,3 +1,7 @@
+from collatz import functions
+from itertools import groupby
+from operator import itemgetter
+
 def fixed_points(n):
 	if n % 2 == 0:
 		return ((5/2) * n * n + (7 / 2) * n) / ((5 / 2) * n + 3)
@@ -11,7 +15,7 @@ def orbit(n):
 
 	n0 = n
 	while(n0 != 1):
-		n0 = collatz_function(n0)
+		n0 = functions.collatz_function(n0)
 		orbita.append(n0)
 
 	return orbita
@@ -23,7 +27,7 @@ def orbit_and_period(n):
 	n0 = n
 	i = 1
 	while(n0 != 1):
-		n0 = collatz_function(n0)
+		n0 = functions.collatz_function(n0)
 		orbita.append(n0)
 		i += 1
 
