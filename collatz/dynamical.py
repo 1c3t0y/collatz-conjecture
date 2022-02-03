@@ -2,75 +2,125 @@ from collatz import functions
 from itertools import groupby
 from operator import itemgetter
 
-def fixed_points(n):
-	if n % 2 == 0:
-		return ((5/2) * n * n + (7 / 2) * n) / ((5 / 2) * n + 3)
-	else:
-		return (((5/2) * n * n + (7 / 2) * n + 1) / ((5 / 2) * n + (3 / 2)))
+def orbit(x0, function, iterations, *args, **kwargs):
+	"""This function computes the orbit of a initial value x_0 over a 
+	map f(x) and returns it as a list.
 
-
-def orbit(n):
-	orbita = []
-	orbita.append(n)
-
-	n0 = n
-	while(n0 != 1):
-		n0 = functions.collatz_function(n0)
-		orbita.append(n0)
-
-	return orbita
-
-def orbit_and_period(n):
-	orbita = []
-	orbita.append(n)
-
-	n0 = n
-	i = 1
-	while(n0 != 1):
-		n0 = functions.collatz_function(n0)
-		orbita.append(n0)
-		i += 1
-
-	return i, orbita
-
-
-def same_orbit_length_range(begin, end):
-	if end <= begin:
-		end = begin + 1
-	 
-	len_dict = {}
-	for i in range(begin, end):
-		len, orbit = orbit_and_period(i)
+	Args:
+		x0: Initial value.
 		
+		iterations: (int) Number of iterations to apply over x0.
+		
+		function: (function) Function on which the discrete dynamical 
+		system is defined.
+	Returns:
+		list: list with the orbit of x0 over f(x)
+	"""
+
+	orbit_list = [] 
+	orbit_list.append(x0) #adding the initial value to the orbit (iteration 0)
+	
+	#iterating over the function.
+	x = x0
+	for i in range(iterations):
+		# Calculates and adds the next element of the orbit.
+		x = function(x, *args, **kwargs)
+		orbit_list.append(x)
+
+	return orbit_list
+
+def is_periodic(orbit_list, function, *args, **kwargs):
+	return orbit_list[0] == function(orbit_list[-1], *args, **kwargs)
+
+
+def periodic_orbit(x0, function, stop_iterations = 100, *args, **kwargs):
+	"""This function computes the periodic orbit of a initial value $x_0$ 
+	over a map $f(x)$ and returns two elements: a *list* with the orbit 
+	and an integer that represents the *period*. If stop_iterations is 
+	reached whithout finding a periodic orbit, it returns a period of -1. 
+	If the initial value $x_0$ converges to a periodic orbit, the function 
+	returns the periodic orbit and its period.
+
+
+	Args:
+		x0: Initial value
+
+		function (function): Function on which the discrete dynamical system 
+		is defined.
+		
+		stop_iterations (int, optional): Max number of iterations before stop.
+		Defaults to 100.
+
+	Returns:
+		(list, int): Orbit and period of x0 over f(x). if stop_iterations is 
+		reached, period i set to -1.
+	"""
+	orbit_list = []
+	orbit_list.append(x0)
+
+	x = x0
+	for i in range(stop_iterations):
+		x = function(x, *args, **kwargs)
+		
+		if x in orbit_list:
+			index = orbit_list.index(x)
+			orbit_list = orbit_list[index:]
+			period = len(orbit_list)
+			return orbit_list, period
+		
+		orbit_list.append(x)
+
+	period = -1
+
+	return orbit_list, period
+
+def search_periodic_orbits(values, function, stop_iterations = 100, *args, **kwargs):
+	periodic_orbits = dict()
+	for value in values:
+		orbit_list, period = periodic_orbit(value, function, stop_iterations = 100, *args, **kwargs)
+		
+		if period != -1:
+			orbit_tuple = tuple(orbit_list)
+
+			try:
+				periodic_orbits[value].add(orbit_tuple)
+			except:
+				periodic_orbits[value] = {orbit_tuple}
+
+	return periodic_orbits
+
+
+def is_fixed(x, function, *args, **kwargs):
+	return x == function(x, *args, **kwargs)
+
+
+def fixed_point(x0, function, stop_iterations = 100, *args, **kwargs):
+	x = x0
+	for i in range(stop_iterations):
+		if is_fixed(x, stop_iterations = 100, *args, **kwargs):
+			return x, i
+		x = function(x, *args, **kwargs)
+	return x, None
+
+
+def same_orbit_length(values, function, stop_iterations, *args, **kwargs):	 
+	len_dict = {}
+	for x in values:
+		orbit, period = periodic_orbit(x)
+
+		if period == -1:
+			continue
+
 		try:
-			len_dict[len].append(i)
+			len_dict[period].append(x)
 		except:
-			len_dict[len] = [i]
+			len_dict[period] = [x]
 	
 	return len_dict
 
 
-def same_orbit_length(lengths, begin = 1, end = 1000):
-	if type(lengths) != type([]):
-		lengths = [lengths]
-
-	same_len_range = same_orbit_length_range(begin, end)
-	same_len = {}
-	
-	for key in lengths:
-		try:
-			numbers = same_len_range[key]
-
-		except:
-			numbers = []
-
-		same_len[key] = numbers
-
-	return same_len
-
-
-def consecutive_orbits_length(begin, end):
-	same_len = same_orbit_length_range(begin, end)
+def consecutive_orbits_length(values, function, stop_iterations, *args, **kwargs):
+	same_len = same_orbit_length(values, function, stop_iterations, *args, **kwargs)
 	consecutive_same_len = {}
 
 	for key in same_len:
@@ -86,3 +136,28 @@ def consecutive_orbits_length(begin, end):
 				consecutive_same_len[n] = [consecutive]
 
 	return (consecutive_same_len)
+
+
+class DDS:
+	"""
+		Class for analyze Discrete dynamical systems
+	"""
+
+	def __init__(self, function, iterations, values, *args, **kwargs) -> None:
+		self.values = values
+		self.function = function
+		self.iterations = iterations
+		self.args = args
+		self.kwargs = kwargs
+
+		self.orbits = []
+		for value in self.values:
+			self.orbits.append(orbit(value, self.iterations, self.function, *self.args, **self.kwargs))
+		pass
+
+	def f(self, x):
+		return self.function(x, *self.args, **self.kwargs)
+
+	def orbit(self, x0):
+		return orbit(x0, self.iterations, self.function, *self.args, **self.kwargs)
+
