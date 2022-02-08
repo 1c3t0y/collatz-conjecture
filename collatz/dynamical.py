@@ -1,3 +1,4 @@
+from optparse import Values
 from collatz import functions
 from itertools import groupby
 from operator import itemgetter
@@ -28,6 +29,7 @@ def orbit(x0, function, iterations, *args, **kwargs):
 		orbit_list.append(x)
 
 	return orbit_list
+
 
 def is_periodic(orbit_list, function, *args, **kwargs):
 	return orbit_list[0] == function(orbit_list[-1], *args, **kwargs)
@@ -73,6 +75,7 @@ def periodic_orbit(x0, function, stop_iterations = 100, *args, **kwargs):
 	period = -1
 
 	return orbit_list, period
+
 
 def search_periodic_orbits(values, function, stop_iterations = 100, *args, **kwargs):
 	periodic_orbits = dict()
@@ -143,21 +146,61 @@ class DDS:
 		Class for analyze Discrete dynamical systems
 	"""
 
-	def __init__(self, function, iterations, values, *args, **kwargs) -> None:
+	def __init__(self, values, function, iterations, stop_iterations, start = None,*args, **kwargs) -> None:
 		self.values = values
 		self.function = function
 		self.iterations = iterations
+		self.stop_iterations = stop_iterations
 		self.args = args
 		self.kwargs = kwargs
 
-		self.orbits = []
-		for value in self.values:
-			self.orbits.append(orbit(value, self.iterations, self.function, *self.args, **self.kwargs))
-		pass
+		self.orbits = None
 
-	def f(self, x):
-		return self.function(x, *self.args, **self.kwargs)
+		if start == 'orbit':
+			self.orbits = self.orbit()
+		elif start == 'periodic':
+			self.orbits = self.periodic_orbit()
 
-	def orbit(self, x0):
-		return orbit(x0, self.iterations, self.function, *self.args, **self.kwargs)
 
+	def f(self, inplace = False):
+		f_of_values = [self.function(value, *self.args, **self.kwargs) for value in self.values]
+		return f_of_values
+
+
+	def orbit(self, values = None, inplace = False):
+		if values is None:
+			values = self.values
+
+		orbits_values = [orbit(value, self.function, self.iterations, *self.args, **self.kwargs) for value in values]
+
+		if inplace:
+			self.values = values
+			self.orbits = orbits_values
+			return None
+
+		return orbits_values
+		
+	
+	def is_periodic(self, orbits_list = None):
+		if orbits_list is None and self.orbits is None:
+			orbits_list = self.orbit()
+		elif orbits_list is None:
+			orbits_list = self.orbits
+
+		is_periodic_list = [is_periodic(orbits_value, self.function, *self.args, **self.kwargs) for orbits_value in orbits_list]
+		
+		return is_periodic_list
+
+
+	def periodic_orbit(self, values = None, inplace = False):
+		if values is None:
+			values = self.values
+
+		orbits_values = [periodic_orbit(value, self.function, self.iterations, *self.args, **self.kwargs) for value in values]
+
+		if inplace:
+			self.values = values
+			self.orbits = orbits_values
+			return None
+
+		return orbits_values
