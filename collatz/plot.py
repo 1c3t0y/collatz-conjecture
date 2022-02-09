@@ -1,22 +1,60 @@
+from matplotlib import markers
 import matplotlib.pyplot as plt
+plt.rcParams['text.usetex'] = True
 
-def plot_collatz_lines(a, b, n = 1000):
-	x = np.arange(start = a, stop = b, step = 1 / n)
-	y = list(map(collatz_lines, x))
+def plot_orbit(orbit_list, function_name = 'f', display_mode = 'show', label_data = False, savefig_name = '', title = None, marker = 'o'):
+	if title is None:
+		title = 'Orbit of $x_0$ ' + str(orbit_list[0])+' under ' + function_name
 
-	x_int = range(a, b + 1, 1)
-	y_int = list(map(collatz_function, x_int))
+	x = range(0, len(orbit_list))
+	plt.title(title)
+	plt.plot(x, orbit_list, marker = marker)
+	plt.ylabel(r"$f^{k}(x)$")
+	plt.xlabel("Iterations")
 
-	fix_pts = list(map(fixed_points, x_int))
+	if label_data:
+		for x, y in zip(x,orbit_list):
+			plt.annotate(y, # this is the text
+						(x,y), # these are the coordinates to position the label
+						textcoords="offset points", # how to position the text
+						xytext=(0,5), # distance from text to points (x,y)
+						ha='center') # horizontal alignment can be left, right or center
 
-	x_par = list(map(lambda x: x/2, x_int))
-	x_impar = list(map(lambda x: 3*x + 1, x_int))
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
+		
 
-	plt.plot(x, y)
+def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = 'show', 
+				label_data = False, savefig_name = '', legend = True, markers = None, title = None):
+	
+	if title is None:
+		title = 'Orbits under ' + function_name
+	
+	plt.title(title)
 
-	plt.plot(x, x)
+	if markers is None:
+		markers = ['o' for i in range(len(orbits_list))]
 
-	plt.plot(x_int, x_par)
-	plt.plot(x_int, x_impar)
+	for i, orbit_list in enumerate(orbits_list):
+		x = range(0, len(orbit_list))
+		plt.plot(x, orbit_list, label = orbits_label[i], marker = markers[i])
+		plt.ylabel(r"$f^{k}(x)$")
+		plt.xlabel("Iterations")
 
-	plt.scatter(fix_pts, fix_pts)
+		if label_data:
+			for x, y in zip(x,orbit_list):
+				plt.annotate(y, # this is the text
+							(x,y), # these are the coordinates to position the label
+							textcoords="offset points", # how to position the text
+							xytext=(0,5), # distance from text to points (x,y)
+							ha='center') # horizontal alignment can be left, right or center
+
+	if legend:
+		plt.legend()
+
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
