@@ -1,5 +1,5 @@
 from optparse import Values
-from collatz import functions
+from collatz import functions, plot
 from itertools import groupby
 from operator import itemgetter
 
@@ -204,3 +204,15 @@ class DDS:
 			return None
 
 		return orbits_values
+
+
+	def plot_f(self, display_mode = 'show', savefig_name = '', title = None, range = (-10,10), num = 100, figsize=(10,8)):
+		plot.plot_function(self.function, display_mode, savefig_name = savefig_name, title = title, 
+							range = range, num = num, figsize=figsize, *self.args, **self.kwargs)
+
+	def plot_orbits(self, function_name = 'f', display_mode = 'show', label_data = False, savefig_name = '', legend = True, markers = None, title ='', figsize = (8,6)):
+		
+		orbits_label = ["Orbit of " + value for value in self.values]
+		plot.plot_orbits(self.orbits, orbits_label, function_name = function_name, display_mode = display_mode, 
+					label_data = label_data, savefig_name = savefig_name, legend = legend, 
+					markers = markers, title = title, figsize = figsize)

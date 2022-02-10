@@ -1,5 +1,6 @@
 from collatz import utils
 import numpy as np
+import math
 
 def collatz_function(n):
 	if(n % 2 == 0):
@@ -15,7 +16,7 @@ def collatz_lines(x):
 		return (-(5 / 2) * n - (1 / 2)) * (x - n) + 3*n + 1
 
 def collatz_extension(x):
-    return x + 0.25 - ((2*x + 1) / 2) * np.cos(np.pi * x)
+    return x + 0.25 - 0.25 * (2*x + 1) * np.cos(np.pi * x)
 
 def generate_collatz_data(num_files = 0):
 	last_begin_end = utils.load_last_begin_end()
