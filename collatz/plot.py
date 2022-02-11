@@ -84,7 +84,7 @@ def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = '
 		
 		if label_data:
 			for x, y in zip(x,orbit_list):
-				plt.annotate(y, # this is the text
+				plt.annotate("{:.2f}".format(y), # this is the text
 							(x,y), # these are the coordinates to position the label
 							textcoords="offset points", # how to position the text
 							xytext=(0,5), # distance from text to points (x,y)
