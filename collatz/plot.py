@@ -2,6 +2,7 @@ from tkinter import font
 from matplotlib import markers
 import matplotlib.pyplot as plt
 import numpy as np
+import networkx as nx
 
 plt.rcParams['text.usetex'] = True
 
@@ -103,8 +104,7 @@ def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = '
 		plt.savefig(savefig_name)
 
 
-def plot_horizontal_orbits(values, orbits_list, display_mode = 'show', 
-				savefig_name = '', title ='', figsize = (8,6)):
+def plot_vertical_orbits(values, orbits_list, display_mode = 'show', savefig_name = '', title ='', figsize = (8,6)):
 	
 	if title is None:
 		title = 'Orbits under f' 
@@ -122,6 +122,45 @@ def plot_horizontal_orbits(values, orbits_list, display_mode = 'show',
 	#plt.xticks(fontsize = figsize[0]*1.5)
 	#plt.yticks(fontsize = figsize[1]*1.5)
 	
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
+
+
+def plot_directed_orbit(orbit_list, figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
+						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
+
+	orbit_tuples = [(orbit_list[i], orbit_list[i+1]) for i in range(len(orbit_list) - 1)]
+	G = nx.MultiDiGraph()
+	G.add_edges_from(orbit_tuples)
+
+	plt.figure(figsize=figsize)
+	nx.draw_spring(G, with_labels = True, node_size = node_size, edgecolors = edgecolors, font_size = font_size, 
+					width = width, node_color = node_color, connectionstyle = connectionstyle)
+
+
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
+
+
+def plot_directed_orbits(orbits_list, value_format = "{:.2f}", figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
+						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
+
+	orbits_formatted = []
+
+	orbit_tuples = [(value_format.format(orbits_list[i][j]), value_format.format(orbits_list[i][j+1])) 
+						for i in range(len(orbits_list)) for j in range(len(orbits_list[i]) - 1)]
+	G = nx.MultiDiGraph()
+	G.add_edges_from(orbit_tuples)
+
+	plt.figure(figsize=figsize)
+	nx.draw_shell(G, with_labels = True, node_size = node_size, edgecolors = edgecolors, font_size = font_size, 
+					width = width, node_color = node_color, connectionstyle = connectionstyle)
+
+
 	if display_mode == 'show':
 		plt.show()
 	else:

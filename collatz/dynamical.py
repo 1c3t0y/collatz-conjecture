@@ -1,4 +1,5 @@
 from optparse import Values
+from tkinter import HORIZONTAL
 from collatz import functions, plot
 from itertools import groupby
 from operator import itemgetter
@@ -206,14 +207,40 @@ class DDS:
 		return orbits_values
 
 
+	def search_periodic_orbits(self, inplace = False):
+		periodic_orbits = search_periodic_orbits(self.values, self.function, self.stop_iterations, *self.args, **self.kwargs)
+		if inplace:
+			self.orbits = [orbit[0] for orbit in periodic_orbits]
+		else:
+			return periodic_orbits
+
+
+	def is_fixed(self):
+		return [is_fixed(x, self.function, *self.args, **self.kwargs) for x in self.values]
+
+
+	def fixed_point(self, stop_iterations = None):
+		if stop_iterations is None:
+			stop_iterations = self.stop_iterations
+		return [fixed_point(x0, self.function, stop_iterations, *self.args, **self.kwargs) for x0 in self.values]
+
+
 	def plot_f(self, display_mode = 'show', savefig_name = '', title = None, range = (-10,10), num = 100, figsize=(10,8)):
 		
 		plot.plot_function(self.function, display_mode, savefig_name = savefig_name, title = title, 
 							range = range, num = num, figsize=figsize, *self.args, **self.kwargs)
 
+
 	def plot_orbits(self, function_name = 'f', display_mode = 'show', label_data = False, savefig_name = '', legend = True, markers = None, title ='', figsize = (8,6)):
 		
 		orbits_label = ["Orbit of " + "{:.2f}".format(value) for value in self.values]
-		plot.plot_orbits(self.orbits, orbits_label, function_name = function_name, display_mode = display_mode, 
+		plot.plot_orbits(self.orbits, orbits_label, 
+					function_name = function_name, display_mode = display_mode, 
 					label_data = label_data, savefig_name = savefig_name, legend = legend, 
 					markers = markers, title = title, figsize = figsize)
+
+
+	def plot_vertical_orbits(self, display_mode = 'show', savefig_name = '', title ='', figsize = (8,6)):
+
+		plot.plot_vertical_orbits(self.values, self.orbits, display_mode = display_mode, 
+				savefig_name = savefig_name, title = title, figsize = figsize)
