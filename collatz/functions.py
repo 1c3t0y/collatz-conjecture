@@ -15,6 +15,13 @@ def collatz_lines(x):
 	else:
 		return (-(5 / 2) * n - (1 / 2)) * (x - n) + 3*n + 1
 
+def fixed_points(n):
+	if n % 2 == 0:
+		return ((5/2) * n * n + (7 / 2) * n) / ((5 / 2) * n + 3)
+	else:
+		return (((5/2) * n * n + (7 / 2) * n + 1) / ((5 / 2) * n + (3 / 2)))
+
+
 def collatz_extension(x):
     return x + 0.25 - 0.25 * (2*x + 1) * np.cos(np.pi * x)
 

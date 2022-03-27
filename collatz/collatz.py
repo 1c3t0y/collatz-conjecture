@@ -1,24 +1,19 @@
-from collatz import functions
+from collatz import functions, plot
 from itertools import groupby
 from operator import itemgetter
 
-def fixed_points(n):
-	if n % 2 == 0:
-		return ((5/2) * n * n + (7 / 2) * n) / ((5 / 2) * n + 3)
-	else:
-		return (((5/2) * n * n + (7 / 2) * n + 1) / ((5 / 2) * n + (3 / 2)))
-
 
 def orbit(n):
-	orbit = []
-	orbit.append(n)
+	orbit_list = []
+	orbit_list.append(n)
 
 	n0 = n
 	while(n0 != 1):
 		n0 = functions.collatz_function(n0)
-		orbit.append(n0)
+		orbit_list.append(n0)
 
-	return orbit
+	return orbit_list
+
 
 def orbit_and_period(n):
 	orbita = []
@@ -34,13 +29,10 @@ def orbit_and_period(n):
 	return i, orbita
 
 
-def same_orbit_length_range(begin, end):
-	if end <= begin:
-		end = begin + 1
-	 
+def same_orbit_length(list_initial):
 	len_dict = {}
-	for i in range(begin, end):
-		len, orbit = orbit_and_period(i)
+	for i in list_initial:
+		len, orbit_len = orbit_and_period(i)
 		
 		try:
 			len_dict[len].append(i)
@@ -50,27 +42,8 @@ def same_orbit_length_range(begin, end):
 	return len_dict
 
 
-def same_orbit_length(lengths, begin = 1, end = 1000):
-	if type(lengths) != type([]):
-		lengths = [lengths]
-
-	same_len_range = same_orbit_length_range(begin, end)
-	same_len = {}
-	
-	for key in lengths:
-		try:
-			numbers = same_len_range[key]
-
-		except:
-			numbers = []
-
-		same_len[key] = numbers
-
-	return same_len
-
-
-def consecutive_orbits_length(begin, end):
-	same_len = same_orbit_length_range(begin, end)
+def consecutive_orbits_length(initial_values):
+	same_len = same_orbit_length(initial_values)
 	consecutive_same_len = {}
 
 	for key in same_len:
@@ -86,3 +59,81 @@ def consecutive_orbits_length(begin, end):
 				consecutive_same_len[n] = [consecutive]
 
 	return (consecutive_same_len)
+
+
+class CollatzProblem:
+	def __init__(self, initial_values, start = 'orbit') -> None:
+		self.values = initial_values
+		self.orbits = None
+		self.periods = None
+		self.function = functions.collatz_function
+
+		if start == 'orbit':
+			self.orbits = self.orbit()
+		elif start == 'periods':
+			self.periods, self.orbits  = self.orbits_and_periods()
+		pass
+
+	def f(self):
+		f_of_values = [self.function(value) for value in self.values]
+		return f_of_values
+
+
+	def orbit(self, values = None, inplace = False):
+		if values is None:
+			values = self.values
+
+		orbits_values = [orbit(value) for value in values]
+
+		if inplace:
+			self.values = values
+			self.orbits = orbits_values
+			return None
+
+		return orbits_values
+	
+	def orbits_and_periods(self, values = None, inplace = False):
+		if values is None:
+			values = self.values
+
+		orbits_values = []
+		period_values = []
+
+		for value in values:
+			period_value, orbit_value = orbit_and_period(value)
+			orbits_values.append(orbit_value)
+			period_values.append(period_value)
+
+		if inplace:
+			self.values = values
+			self.orbits = orbits_values
+			self
+			return None
+
+		return period_values, orbits_values
+
+	def plot_orbits(self, function_name = '$Collatz(x)$', display_mode = 'show', label_data = False, savefig_name = '', legend = True, markers = None, title ='', figsize = (8,6)):
+		
+		orbits_label = ["Orbit of " + "{:.0f}".format(value) for value in self.values]
+		plot.plot_orbits(self.orbits, orbits_label, 
+					function_name = function_name, display_mode = display_mode, 
+					label_data = label_data, savefig_name = savefig_name, legend = legend, 
+					markers = markers, title = title, figsize = figsize)
+
+	def plot_vertical_orbits(self, display_mode = 'show', savefig_name = '', title ='', figsize = (8,6)):
+
+		plot.plot_vertical_orbits(self.values, self.orbits, display_mode = display_mode, 
+				savefig_name = savefig_name, title = title, figsize = figsize)
+
+	def plot_directed_orbit(self, value, prog = 'neato', figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
+						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
+
+		i = self.values.index(value)
+		plot.plot_directed_orbit(self.orbits[i], prog = prog, figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
+						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)
+
+	def plot_directed_orbits(self, prog  = 'dot', figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
+						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
+
+		plot.plot_directed_orbits(self.orbits, prog = prog, value_format = "{:.0f}", figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
+						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)

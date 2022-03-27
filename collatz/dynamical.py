@@ -163,7 +163,7 @@ class DDS:
 			self.orbits = self.periodic_orbit()
 
 
-	def f(self, inplace = False):
+	def f(self):
 		f_of_values = [self.function(value, *self.args, **self.kwargs) for value in self.values]
 		return f_of_values
 

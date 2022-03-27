@@ -1,8 +1,11 @@
-from tkinter import font
-from matplotlib import markers
 import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
+import pydot
+
+from networkx.drawing.nx_pydot import graphviz_layout
+from tkinter import font
+from matplotlib import markers
 
 plt.rcParams['text.usetex'] = True
 
@@ -112,7 +115,8 @@ def plot_vertical_orbits(values, orbits_list, display_mode = 'show', savefig_nam
 	fig = plt.figure(figsize=figsize)
 	ax = fig.add_subplot(1, 1, 1)
 	ax.set_title(title, fontsize = figsize[0]*2)
-
+	ax.grid()
+	
 	for value, orbit in zip(values, orbits_list):
 		x = [value]*len(orbit)
 		ax.scatter(x, orbit)
@@ -128,7 +132,7 @@ def plot_vertical_orbits(values, orbits_list, display_mode = 'show', savefig_nam
 		plt.savefig(savefig_name)
 
 
-def plot_directed_orbit(orbit_list, figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
+def plot_directed_orbit(orbit_list, prog = 'neato', value_format = "{:.2f}", figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
 						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
 
 	orbit_tuples = [(orbit_list[i], orbit_list[i+1]) for i in range(len(orbit_list) - 1)]
@@ -136,7 +140,9 @@ def plot_directed_orbit(orbit_list, figsize = (10,8), connectionstyle = 'arc3, r
 	G.add_edges_from(orbit_tuples)
 
 	plt.figure(figsize=figsize)
-	nx.draw_spring(G, with_labels = True, node_size = node_size, edgecolors = edgecolors, font_size = font_size, 
+
+	pos = graphviz_layout(G, prog = prog)
+	nx.draw(G, pos = pos, with_labels = True, node_size = node_size, edgecolors = edgecolors, font_size = font_size, 
 					width = width, node_color = node_color, connectionstyle = connectionstyle)
 
 
@@ -146,18 +152,21 @@ def plot_directed_orbit(orbit_list, figsize = (10,8), connectionstyle = 'arc3, r
 		plt.savefig(savefig_name)
 
 
-def plot_directed_orbits(orbits_list, value_format = "{:.2f}", figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
+def plot_directed_orbits(orbits_list, prog  = 'dot', value_format = "{:.2f}", figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
 						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
 
 	orbits_formatted = []
 
 	orbit_tuples = [(value_format.format(orbits_list[i][j]), value_format.format(orbits_list[i][j+1])) 
 						for i in range(len(orbits_list)) for j in range(len(orbits_list[i]) - 1)]
+	
 	G = nx.MultiDiGraph()
 	G.add_edges_from(orbit_tuples)
 
 	plt.figure(figsize=figsize)
-	nx.draw_shell(G, with_labels = True, node_size = node_size, edgecolors = edgecolors, font_size = font_size, 
+
+	pos = graphviz_layout(G, prog = prog)
+	nx.draw(G, pos = pos, with_labels = True, node_size = node_size, edgecolors = edgecolors, font_size = font_size, 
 					width = width, node_color = node_color, connectionstyle = connectionstyle)
 
 
