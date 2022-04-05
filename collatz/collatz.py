@@ -137,3 +137,8 @@ class CollatzProblem:
 
 		plot.plot_directed_orbits(self.orbits, prog = prog, value_format = "{:.0f}", figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
 						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)
+
+	def plot_iterations(self, *args, **kwargs):
+
+		plot.plot_iterations(self.values, self.orbits, *args, **kwargs)
+
