@@ -177,7 +177,7 @@ def plot_directed_orbits(orbits_list, prog  = 'dot', value_format = "{:.2f}", fi
 
 def plot_iterations(initial_values, orbits_list, is_orbit = True, display_mode = 'Show', savefig_name = 'image.png',figsize = (10,8), *args, **kwargs):
 	if is_orbit:
-		period_list = [len(orbit) for orbit in orbits_list]
+		period_list = [len(orbit) - 1 for orbit in orbits_list]
 	else:
 		period_list = orbits_list
 	

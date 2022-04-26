@@ -1,32 +1,52 @@
+from ast import arg
+from numpy import argsort
 from collatz import functions, plot
 from itertools import groupby
 from operator import itemgetter
+from math import log
 
 
-def orbit(n):
+def orbit(n, f, *args, **kwargs):
 	orbit_list = []
 	orbit_list.append(n)
 
 	n0 = n
 	while(n0 != 1):
-		n0 = functions.collatz_function(n0)
+		n0 = f(n0, *args, **kwargs)
 		orbit_list.append(n0)
 
 	return orbit_list
 
 
-def orbit_and_period(n):
+def orbit_and_period(n, f, *args, **kwargs):
 	orbita = []
 	orbita.append(n)
 
 	n0 = n
-	i = 1
+	i = 0
 	while(n0 != 1):
-		n0 = functions.collatz_function(n0)
+		n0 = f(n0, *args, **kwargs)
 		orbita.append(n0)
 		i += 1
 
 	return i, orbita
+
+
+def stoping_time_ratio(n, f, *args, **kwargs):
+	i, trajectory = orbit_and_period(n, f, *args, **kwargs)
+	return (i) / log(n)
+
+
+def parity_sequence(n, f, *args, **kwargs):
+	trajectory = orbit(n, f, *args, **kwargs)
+	sequence = [i % 2 for i in trajectory]
+	sequence[-1] = 0
+	return sequence
+
+
+def ones_ratio(n, f, *args, **kwargs):
+	sequence = parity_sequence(n, f, *args, **kwargs)
+	return sum(sequence) / len(sequence)
 
 
 def same_orbit_length(list_initial):
@@ -62,11 +82,13 @@ def consecutive_orbits_length(initial_values):
 
 
 class CollatzProblem:
-	def __init__(self, initial_values, start = 'orbit') -> None:
+	def __init__(self, initial_values, start = 'orbit', f = functions.collatz_function, *args, **kwargs) -> None:
 		self.values = initial_values
 		self.orbits = None
 		self.periods = None
-		self.function = functions.collatz_function
+		self.function = f
+		self.args = args
+		self.kwargs = kwargs
 
 		if start == 'orbit':
 			self.orbits = self.orbit()
@@ -75,7 +97,7 @@ class CollatzProblem:
 		pass
 
 	def f(self):
-		f_of_values = [self.function(value) for value in self.values]
+		f_of_values = [self.function(value, *self.args, **self.kwargs) for value in self.values]
 		return f_of_values
 
 
@@ -83,7 +105,7 @@ class CollatzProblem:
 		if values is None:
 			values = self.values
 
-		orbits_values = [orbit(value) for value in values]
+		orbits_values = [orbit(value, self.function, *self.args, **self.kwargs) for value in values]
 
 		if inplace:
 			self.values = values
@@ -100,7 +122,7 @@ class CollatzProblem:
 		period_values = []
 
 		for value in values:
-			period_value, orbit_value = orbit_and_period(value)
+			period_value, orbit_value = orbit_and_period(self.function, *self.args, **self.kwargs)
 			orbits_values.append(orbit_value)
 			period_values.append(period_value)
 

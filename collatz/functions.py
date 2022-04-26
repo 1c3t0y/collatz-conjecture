@@ -8,6 +8,12 @@ def collatz_function(n):
 	else:
 		return 3*n + 1
 
+def collatz_function_short(n):
+	if(n % 2 == 0):
+		return n // 2
+	else:
+		return (3*n + 1) // 2
+
 def collatz_lines(x):
 	n = math.floor(x)
 	if(n % 2 == 0):
