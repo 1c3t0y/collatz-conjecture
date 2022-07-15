@@ -31,8 +31,21 @@ def orbit_and_period(n, f, *args, **kwargs):
 
 	return i, orbita
 
+def period(n, f, *args, **kwargs):
+	orbita = []
+	orbita.append(n)
 
-def stoping_time_ratio(n, f, *args, **kwargs):
+	n0 = n
+	i = 0
+	while(n0 != 1):
+		n0 = f(n0, *args, **kwargs)
+		orbita.append(n0)
+		i += 1
+
+	return i
+
+
+def stopping_time_ratio(n, f, *args, **kwargs):
 	i, trajectory = orbit_and_period(n, f, *args, **kwargs)
 	return (i) / log(n)
 
@@ -47,6 +60,15 @@ def parity_sequence(n, f, *args, **kwargs):
 def ones_ratio(n, f, *args, **kwargs):
 	sequence = parity_sequence(n, f, *args, **kwargs)
 	return sum(sequence) / len(sequence)
+
+
+def stopping_time(n, f, *args, **kwargs):
+	n0 = f(n, *args, **kwargs)
+	i = 1
+	while(n < n0):
+		n0 = f(n0, *args, **kwargs)
+		i += 1
+	return i
 
 
 def same_orbit_length(list_initial):
@@ -92,8 +114,10 @@ class CollatzProblem:
 
 		if start == 'orbit':
 			self.orbits = self.orbit()
-		elif start == 'periods':
+		elif start == 'periods_and_orbits':
 			self.periods, self.orbits  = self.orbits_and_periods()
+		elif start == 'periods':
+			self.periods = self.period()
 		pass
 
 	def f(self):
@@ -122,25 +146,46 @@ class CollatzProblem:
 		period_values = []
 
 		for value in values:
-			period_value, orbit_value = orbit_and_period(self.function, *self.args, **self.kwargs)
+			period_value, orbit_value = orbit_and_period(value, self.function, *self.args, **self.kwargs)
 			orbits_values.append(orbit_value)
 			period_values.append(period_value)
 
 		if inplace:
 			self.values = values
 			self.orbits = orbits_values
-			self
 			return None
 
 		return period_values, orbits_values
 
-	def plot_orbits(self, function_name = '$Collatz(x)$', display_mode = 'show', label_data = False, savefig_name = '', legend = True, markers = None, title ='', figsize = (8,6)):
+	def period(self, values = None, inplace = False):
+		if values is None:
+			values = self.values
+		
+		period_values = []
+
+		if self.orbits == [] or self.orbits is None:
+			for value in values:
+				period_value = period(value, self.function, *self.args, **self.kwargs)
+				period_values.append(period_value)
+		else:
+			for orbit in self.orbits:
+				period_value = len(orbit)
+				period_values.append(period_value)
+		
+		if inplace:
+			self.values = values
+			self.periods = period_values
+			return None
+
+		return period_values
+
+	def plot_orbits(self, function_name = '$Collatz(x)$', display_mode = 'show', label_data = False, savefig_name = '', legend = True, markers = None, title ='', figsize = (8,6), fontsize = (12,9)):
 		
 		orbits_label = ["Orbit of " + "{:.0f}".format(value) for value in self.values]
 		plot.plot_orbits(self.orbits, orbits_label, 
 					function_name = function_name, display_mode = display_mode, 
 					label_data = label_data, savefig_name = savefig_name, legend = legend, 
-					markers = markers, title = title, figsize = figsize)
+					markers = markers, title = title, figsize = figsize, fontsize=fontsize)
 
 	def plot_vertical_orbits(self, display_mode = 'show', savefig_name = '', title ='', figsize = (8,6)):
 
@@ -161,6 +206,7 @@ class CollatzProblem:
 						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)
 
 	def plot_iterations(self, *args, **kwargs):
-
-		plot.plot_iterations(self.values, self.orbits, *args, **kwargs)
+		if self.periods is None:
+			self.periods = self.period()
+		plot.plot_iterations(self.values, self.periods, *args, **kwargs)
 

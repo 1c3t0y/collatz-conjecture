@@ -69,7 +69,7 @@ def plot_orbit(orbit_list, function_name = 'f', display_mode = 'show', label_dat
 		
 
 def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = 'show', 
-				label_data = False, savefig_name = 'image.png', legend = True, markers = None, title ='', figsize = (8,6)):
+				label_data = False, savefig_name = 'image.png', legend = True, markers = None, title ='', figsize = (8,6), fontsize = (12,9)):
 	
 	if title is None:
 		title = 'Orbits under ' + function_name
@@ -94,10 +94,10 @@ def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = '
 							xytext=(0,5), # distance from text to points (x,y)
 							ha='center') # horizontal alignment can be left, right or center
 
-	plt.ylabel(r"$f^{k}(x)$", fontsize = figsize[1]*1.5)
-	plt.xlabel("Iterations", fontsize = figsize[0]*1.5)
-	plt.xticks(fontsize = figsize[0]*1.5)
-	plt.yticks(fontsize = figsize[1]*1.5)
+	plt.ylabel(r"$f^{k}(x)$", fontsize = fontsize[1])
+	plt.xlabel("Iterations", fontsize = fontsize[0])
+	plt.xticks(fontsize = fontsize[0])
+	plt.yticks(fontsize = fontsize[1])
 	if legend:
 		plt.legend()
 
@@ -175,14 +175,11 @@ def plot_directed_orbits(orbits_list, prog  = 'dot', value_format = "{:.2f}", fi
 	else:
 		plt.savefig(savefig_name)
 
-def plot_iterations(initial_values, orbits_list, is_orbit = True, display_mode = 'Show', savefig_name = 'image.png',figsize = (10,8), *args, **kwargs):
-	if is_orbit:
-		period_list = [len(orbit) - 1 for orbit in orbits_list]
-	else:
-		period_list = orbits_list
+def plot_iterations(initial_values, periods_list, display_mode = 'Show', savefig_name = 'image.png',figsize = (10,8), *args, **kwargs):
 	
 	plt.figure(figsize=figsize)
-	plt.scatter(initial_values, period_list, *args, **kwargs)
+	plt.xticks(initial_values)
+	plt.scatter(initial_values, periods_list, *args, **kwargs)
 
 	if display_mode == 'show':
 		plt.show()
