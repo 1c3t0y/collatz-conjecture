@@ -15,11 +15,11 @@ def collatz_function_short(n):
 		return (3*n + 1) // 2
 
 def collatz_lines(x):
-	n = math.floor(x)
+	n = int(math.floor(x))
 	if(n % 2 == 0):
-		return (((5 / 2) * n + 4) * (x - n) + (n / 2))
+		return 0.5*x*(5*n + 8) - 0.5*n*(5*n + 7)
 	else:
-		return (-(5 / 2) * n - (1 / 2)) * (x - n) + 3*n + 1
+		return -0.5*x*(5*n+1) + 0.5*n*(5*n + 7) + 1
 
 def fixed_points(n):
 	if n % 2 == 0:

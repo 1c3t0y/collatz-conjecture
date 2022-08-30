@@ -9,12 +9,61 @@ from matplotlib import markers
 
 plt.rcParams['text.usetex'] = True
 
-def plot_function(func, display_mode = 'show', savefig_name = 'image.png', title = None, range = (-10,10), num = 100, figsize=(10,8), *args, **kwargs):
+
+def plot_dots(func, 
+				display_mode = 'show', 
+				savefig_name = 'image.png', 
+				title = None, 
+				range = (-10,10), 
+				num = 100, 
+				figsize=(10,8),
+				xlim = (-10,10),
+				ylim = (-10,10), 
+				*args, **kwargs):
+	if title is None:
+		title = 'Plot of $f(x)$'
+	
+	# linearly spaced numbers
+	x = np.linspace(range[0], range[1], num)
+	y = [func(value, *args, **kwargs) for value in x]
+
+	fig = plt.figure(figsize=figsize)
+	ax = fig.add_subplot(1, 1, 1)
+	ax.set_title(title, fontsize = figsize[0]*2)
+	ax.spines['left'].set_position('zero')
+	ax.spines['bottom'].set_position('zero')
+	ax.spines['right'].set_color('none')
+	ax.spines['top'].set_color('none')
+	ax.xaxis.set_ticks_position('bottom')
+	ax.yaxis.set_ticks_position('left')
+	ax.grid()
+
+	# plot the function
+	plt.xlim(xlim)
+	plt.ylim(ylim)
+	plt.scatter(x,y)
+
+	
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
+	
+
+
+def plot_function(func, display_mode = 'show', 
+					savefig_name = 'image.png', 
+					title = None, range = (-10,10), 
+					num = 100, 
+					figsize=(10,8),
+					xlim = (-10,10),
+					ylim = (-10,10),
+					 *args, **kwargs):
 	if title is None:
 		title = 'Plot of $f(x)$'
 
 
-	# 100 linearly spaced numbers
+	# linearly spaced numbers
 	x = np.linspace(range[0], range[1], num)
 	y = [func(value, *args, **kwargs) for value in x]
 	
@@ -30,6 +79,8 @@ def plot_function(func, display_mode = 'show', savefig_name = 'image.png', title
 	ax.grid()
 
 	# plot the function
+	plt.xlim(xlim)
+	plt.ylim(ylim)
 	plt.plot(x, y, 'r')
 
 	if display_mode == 'show':
