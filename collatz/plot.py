@@ -89,7 +89,9 @@ def plot_function(func, display_mode = 'show',
 		plt.savefig(savefig_name)
 
 
-def plot_orbit(orbit_list, function_name = 'f', display_mode = 'show', label_data = False, savefig_name = 'image.png', title = None, marker = 'o', figsize = (10,8)):
+def plot_orbit(orbit_list, function_name = 'f', display_mode = 'show', 
+				label_data = False, savefig_name = 'image.png', title = None, 
+				marker = 'o', figsize = (10,8)):
 	if title is None:
 		title = 'Orbit of $x_0$ ' + str(orbit_list[0])+' under ' + function_name
 
@@ -120,7 +122,8 @@ def plot_orbit(orbit_list, function_name = 'f', display_mode = 'show', label_dat
 		
 
 def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = 'show', 
-				label_data = False, savefig_name = 'image.png', legend = True, markers = None, title ='', figsize = (8,6), fontsize = (12,9)):
+				label_data = False, savefig_name = 'image.png', legend = True, markers = None, 
+				title ='', figsize = (8,6), fontsize = (12,9)):
 	
 	if title is None:
 		title = 'Orbits under ' + function_name
@@ -145,12 +148,12 @@ def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = '
 							xytext=(0,5), # distance from text to points (x,y)
 							ha='center') # horizontal alignment can be left, right or center
 
-	plt.ylabel(r"$f^{k}(x)$", fontsize = fontsize[1])
-	plt.xlabel("Iterations", fontsize = fontsize[0])
+	plt.ylabel("$"+ function_name + r"^{k}(x)$", fontsize = fontsize[1])
+	plt.xlabel("Iteraciones", fontsize = fontsize[0])
 	plt.xticks(fontsize = fontsize[0])
 	plt.yticks(fontsize = fontsize[1])
 	if legend:
-		plt.legend()
+		plt.legend(loc='upper right')
 
 	if display_mode == 'show':
 		plt.show()
@@ -158,7 +161,8 @@ def plot_orbits(orbits_list, orbits_label, function_name = 'f', display_mode = '
 		plt.savefig(savefig_name)
 
 
-def plot_vertical_orbits(values, orbits_list, display_mode = 'show', savefig_name = 'image.png', title ='', figsize = (8,6)):
+def plot_vertical_orbits(values, orbits_list, display_mode = 'show', savefig_name = 'image.png', 
+						title ='', figsize = (8,6)):
 	
 	if title is None:
 		title = 'Orbits under f' 
@@ -203,8 +207,10 @@ def plot_directed_orbit(orbit_list, prog = 'neato', value_format = "{:.2f}", fig
 		plt.savefig(savefig_name)
 
 
-def plot_directed_orbits(orbits_list, prog  = 'dot', value_format = "{:.2f}", figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = 'image.png',
-						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
+def plot_directed_orbits(orbits_list, prog  = 'dot', value_format = "{:.2f}", figsize = (10,8), 
+						connectionstyle = 'arc3, rad = 0', display_mode = 'show', 
+						savefig_name = 'image.png', node_size = 500, font_size = 12, 
+						node_color = 'white', edgecolors = 'black', width = 2):
 
 	orbits_formatted = []
 

@@ -8,20 +8,23 @@ def collatz_function(n):
 	else:
 		return 3*n + 1
 
+
 def collatz_function_short(n):
 	if(n % 2 == 0):
 		return n // 2
 	else:
 		return (3*n + 1) // 2
 
+
 def collatz_lines(x):
-	n = int(math.floor(x))
+	n = math.floor(x)
 	if(n % 2 == 0):
 		return 0.5*x*(5*n + 8) - 0.5*n*(5*n + 7)
 	else:
 		return -0.5*x*(5*n+1) + 0.5*n*(5*n + 7) + 1
 
-def fixed_points(n):
+
+def lines_fixed_points(n):
 	if n % 2 == 0:
 		return ((5/2) * n * n + (7 / 2) * n) / ((5 / 2) * n + 3)
 	else:
@@ -29,7 +32,8 @@ def fixed_points(n):
 
 
 def collatz_extension(x):
-    return x + 0.25 - 0.25 * (2*x + 1) * np.cos(np.pi * x)
+    return 1.75*x + 0.5 - (1.25*x + 0.5)*np.cos(np.pi*x)
+
 
 def generate_collatz_data(num_files = 0):
 	last_begin_end = utils.load_last_begin_end()

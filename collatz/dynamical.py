@@ -81,14 +81,14 @@ def periodic_orbit(x0, function, stop_iterations = 100, *args, **kwargs):
 def search_periodic_orbits(values, function, stop_iterations = 100, *args, **kwargs):
 	periodic_orbits = dict()
 	for value in values:
-		orbit_list, period = periodic_orbit(value, function, stop_iterations = 100, *args, **kwargs)
+		orbit_list, period = periodic_orbit(value, function, stop_iterations, *args, **kwargs)
 		
 		if period != -1:
 			orbit_tuple = tuple(orbit_list)
 
-			try:
+			if value in periodic_orbits.keys():
 				periodic_orbits[value].add(orbit_tuple)
-			except:
+			else:
 				periodic_orbits[value] = {orbit_tuple}
 
 	return periodic_orbits
@@ -101,7 +101,7 @@ def is_fixed(x, function, *args, **kwargs):
 def fixed_point(x0, function, stop_iterations = 100, *args, **kwargs):
 	x = x0
 	for i in range(stop_iterations):
-		if is_fixed(x, stop_iterations = 100, *args, **kwargs):
+		if is_fixed(x, stop_iterations, *args, **kwargs):
 			return x, i
 		x = function(x, *args, **kwargs)
 	return x, None
@@ -172,7 +172,9 @@ class DDS:
 		if values is None:
 			values = self.values
 
-		orbits_values = [orbit(value, self.function, self.iterations, *self.args, **self.kwargs) for value in values]
+		orbits_values = {}
+		for value in values:
+			orbits_values[value] = orbit(value, self.function, self.iterations, *self.args, **self.kwargs)
 
 		if inplace:
 			self.values = values
@@ -197,7 +199,7 @@ class DDS:
 		if values is None:
 			values = self.values
 
-		orbits_values = [periodic_orbit(value, self.function, self.iterations, *self.args, **self.kwargs) for value in values]
+		orbits_values = [periodic_orbit(value, self.function, self.stop_iterations, *self.args, **self.kwargs) for value in values]
 
 		if inplace:
 			self.values = values
@@ -233,8 +235,8 @@ class DDS:
 
 	def plot_orbits(self, function_name = 'f', display_mode = 'show', label_data = False, savefig_name = '', legend = True, markers = None, title ='', figsize = (8,6)):
 		
-		orbits_label = ["Orbit of " + "{:.2f}".format(value) for value in self.values]
-		plot.plot_orbits(self.orbits, orbits_label, 
+		orbits_label = ["Orbita de " + "{:.2f}".format(value) for value in self.values]
+		plot.plot_orbits(list(self.orbits.values()), orbits_label, 
 					function_name = function_name, display_mode = display_mode, 
 					label_data = label_data, savefig_name = savefig_name, legend = legend, 
 					markers = markers, title = title, figsize = figsize)
