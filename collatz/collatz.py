@@ -209,20 +209,20 @@ class CollatzProblem:
 		self.orbits = None
 		self.periods = None
 		self.stopping_times = None
-		self.stopping_times_ratio = None
+		self.stopping_time_ratios = None
 		self.function = f
 		self.args = args
 		self.kwargs = kwargs
 
 		if start == 'orbit':
 			self.orbits = self.orbit()
-		elif start == 'periods_and_orbits':
+		elif start == 'orbits_and_periods':
 			self.periods, self.orbits  = self.orbits_and_periods()
 		elif start == 'periods':
 			self.periods = self.period()
 
-		if start == 'periods' or start == 'periods_and_orbits':
-			self.stopping_times = self.stopping_time
+		if start == 'periods' or start == 'orbits_and_periods':
+			self.stopping_times = self.stopping_time()
 			self.stopping_time_ratios = self.stopping_time_ratio()
 		pass
 
@@ -263,7 +263,7 @@ class CollatzProblem:
 				period_values[value] = period(value, self.function, *self.args, **self.kwargs)
 		else:
 			for value in self.orbits.keys():
-				period_values[value] = len(orbit[value])
+				period_values[value] = len(self.orbits[value])
 
 		return period_values
 
@@ -295,7 +295,7 @@ class CollatzProblem:
 		stopping_times = {}
 		for value in self.values:
 			stopping_times[value] = stopping_time(value, self.function, *self.args, *self.kwargs)
-		return stopping_time
+		return stopping_times
 
 
 	def stopping_time_ratio(self):
@@ -308,10 +308,10 @@ class CollatzProblem:
 		if not self.periods:
 			self.periods = self.period()
 		
-		stopping_times = {}
+		stopping_times_ratio = {}
 		for value in self.values:
-			stopping_times[value] = stopping_time_ratio(value, self.periods[value])
-		return stopping_time_ratio
+			stopping_times_ratio[value] = stopping_time_ratio(value, self.periods[value])
+		return stopping_times_ratio
 		
 
 	def same_orbit_period(self):
@@ -360,8 +360,8 @@ class CollatzProblem:
 
 
 
-	def plot_orbits(self, function_name = '$Collatz(x)$', display_mode = 'show', label_data = False, savefig_name = None, 
-			legend = True, markers = None, title ='', figsize = (8,6), fontsize = (12,9)):
+	def plot_orbits(self, function_name = 'Collatz', display_mode = 'show', label_data = False, savefig_name = None, 
+			legend = True, markers = None, title = None, figsize = (8,6), fontsize = (12,9)):
 		"""Method to plot the iterations on x axis and value orbit on y value
 
 		Args:
@@ -379,7 +379,7 @@ class CollatzProblem:
 		"""
 		
 		orbits_label = ["Orbit of " + "{:.0f}".format(value) for value in self.values]
-		orbits_ordered = [orbit[value] for value in self.values]
+		orbits_ordered = [self.orbits[value] for value in self.values]
 		plot.plot_orbits(orbits_ordered, orbits_label, 
 					function_name = function_name, display_mode = display_mode, 
 					label_data = label_data, savefig_name = savefig_name, legend = legend, 
@@ -397,7 +397,7 @@ class CollatzProblem:
 			figsize (tuple, optional): size (x,y) of the plot. Defaults to (8,6).
 			fontsize (tuple, optional): size of the text in x axis and y axis. Defaults to (12,9).
 		"""
-		orbits_ordered = [orbit[value] for value in self.values]
+		orbits_ordered = [self.orbits[value] for value in self.values]
 		plot.plot_vertical_orbits(self.values, orbits_ordered, display_mode = display_mode, 
 				savefig_name = savefig_name, title = title, figsize = figsize, fontsize = fontsize)
 
@@ -443,10 +443,10 @@ class CollatzProblem:
 			width (int, optional): width of the connectors. Defaults to 2.
 		"""
 
-		plot.plot_directed_orbits(self.orbits.values, prog = prog, value_format = "{:.0f}", figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
+		plot.plot_directed_orbits(list(self.orbits.values()), prog = prog, value_format = "{:.0f}", figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
 						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)
 
-	def plot_iterations(self, display_mode = 'Show', savefig_name = 'image.png',figsize = (10,8), *args, **kwargs):
+	def plot_iterations(self, display_mode = 'show', savefig_name = 'image.png',figsize = (10,8), *args, **kwargs):
 		"""plots the number of of iterations (y axis) to reach 1 by each value (x axis)
 
 		Args:
@@ -458,4 +458,6 @@ class CollatzProblem:
 		"""
 		if self.periods is None:
 			self.periods = self.period()
-		plot.plot_iterations(self.values, self.periods, display_mode = display_mode, savefig_name = None, figsize=figsize, *args, *kwargs)
+		ordered_periods = [self.periods[value] for value in self.values]
+		plot.plot_iterations(self.values, ordered_periods, display_mode = display_mode, savefig_name = None, 
+							figsize=figsize, *args, *kwargs)

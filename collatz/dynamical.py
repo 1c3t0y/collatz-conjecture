@@ -1,6 +1,4 @@
-from optparse import Values
-from tkinter import HORIZONTAL
-from collatz import functions, plot
+from collatz import plot
 from itertools import groupby
 from operator import itemgetter
 
