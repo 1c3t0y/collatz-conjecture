@@ -196,7 +196,7 @@ class CollatzProblem:
 		"""init method of CollatzProblem calss
 
 		Args:
-			initial_values (list): list with the values to explotr
+			initial_values (list): list with the values to explore
 			start (str, optional): operation to start with, options are:
 									- 'orbit': calculates only the orbits of initial values.
 									- 'periods': calculates only the periods of initial values.
