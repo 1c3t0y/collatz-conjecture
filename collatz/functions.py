@@ -26,13 +26,18 @@ def collatz_lines(x):
 
 def lines_fixed_points(n):
 	if n % 2 == 0:
-		return ((5/2) * n * n + (7 / 2) * n) / ((5 / 2) * n + 3)
+		return (5*n**2 + 7*n)/(5*n+6)
 	else:
-		return (((5/2) * n * n + (7 / 2) * n + 1) / ((5 / 2) * n + (3 / 2)))
+		return (5*n**2 + 7*n + 2) / (5*n+3)
 
 
 def collatz_extension(x):
     return 1.75*x + 0.5 - (1.25*x + 0.5)*np.cos(np.pi*x)
+
+
+def collatz_extension_prime(x):
+	return 1.75 - 1.25*np.cos(np.pi*x) + np.pi*(1.25*x + 0.5)*np.sin(np.pi*x)
+
 
 
 def generate_collatz_data(num_files = 0):

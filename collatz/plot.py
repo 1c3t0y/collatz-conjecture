@@ -1,10 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
-import pydot
 
 from networkx.drawing.nx_pydot import graphviz_layout
-from tkinter import font
 from matplotlib import markers
 
 plt.rcParams['text.usetex'] = True
@@ -190,7 +188,11 @@ def plot_vertical_orbits(values, orbits_list, display_mode = 'show', savefig_nam
 def plot_directed_orbit(orbit_list, prog = 'neato', value_format = "{:.2f}", figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = 'image.png',
 						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
 
-	orbit_tuples = [(orbit_list[i], orbit_list[i+1]) for i in range(len(orbit_list) - 1)]
+	orbit_tuples = list(set(
+					[(" " + value_format.format(orbit_list[i]), " " + value_format.format(orbit_list[i+1])) 
+					for i in range(len(orbit_list) - 1)]
+					))
+					
 	G = nx.MultiDiGraph()
 	G.add_edges_from(orbit_tuples)
 
@@ -212,10 +214,8 @@ def plot_directed_orbits(orbits_list, prog  = 'dot', value_format = "{:.2f}", fi
 						savefig_name = 'image.png', node_size = 500, font_size = 12, 
 						node_color = 'white', edgecolors = 'black', width = 2):
 
-	orbits_formatted = []
-
-	orbit_tuples = [(value_format.format(orbits_list[i][j]), value_format.format(orbits_list[i][j+1])) 
-						for i in range(len(orbits_list)) for j in range(len(orbits_list[i]) - 1)]
+	orbit_tuples = list(set([(" " + value_format.format(orbits_list[i][j]), " " + value_format.format(orbits_list[i][j+1])) 
+						for i in range(len(orbits_list)) for j in range(len(orbits_list[i]) - 1)]))
 	
 	G = nx.MultiDiGraph()
 	G.add_edges_from(orbit_tuples)

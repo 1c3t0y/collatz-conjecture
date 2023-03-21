@@ -1,6 +1,5 @@
 from collatz import plot
-from itertools import groupby
-from operator import itemgetter
+from scipy.optimize import newton
 
 def orbit(x0, function, iterations, *args, **kwargs):
 	"""This function computes the orbit of a initial value x_0 over a 
@@ -108,11 +107,8 @@ def search_periodic_orbits(values, function, stop_iterations = 100, *args, **kwa
 		orbit_list, period = periodic_orbit(value, function, stop_iterations, *args, **kwargs)
 		
 		if period:
-			if value in periodic_orbits.keys():
-				periodic_orbits[value].add(orbit_list)
-			else:
-				periodic_orbits[value] = {orbit_list}
-
+			periodic_orbits[value] = orbit_list
+			
 	return periodic_orbits
 
 
@@ -148,7 +144,7 @@ def fixed_point(x0, function, stop_iterations = 100, *args, **kwargs):
 	"""
 	x = x0
 	for i in range(stop_iterations):
-		if is_fixed(x, stop_iterations, *args, **kwargs):
+		if is_fixed(x, function, *args, **kwargs):
 			return x, i
 		x = function(x, *args, **kwargs)
 	return x, None
@@ -181,17 +177,19 @@ def same_orbit_length(values, function, stop_iterations, *args, **kwargs):
 	return len_dict
 
 
+
 class DDS:
 	"""
 		Class to analyze Discrete dynamical systems
 	"""
 
-	def __init__(self, values, function, iterations, stop_iterations, start = 'orbit',*args, **kwargs) -> None:
+	def __init__(self, values, function, iterations, stop_iterations, fprime = None, start = 'orbit',*args, **kwargs) -> None:
 		"""Constructor for DDS class
 
 		Args:
 			values (list): List with the initial values of the DDS
 			function (function): function on which the DDS is defined
+			fprime (function): Derivative of the function on which the DDS is defined
 			iterations (int): Initial number of iterations to calculate
 			stop_iterations (int): Max number of iterations before stopping.
 			start (str, optional): operation to start with, options are:
@@ -201,6 +199,7 @@ class DDS:
 		"""
 		self.values = values
 		self.function = function
+		self.fprime = fprime
 		self.iterations = iterations
 		self.stop_iterations = stop_iterations
 		self.args = args
@@ -286,23 +285,39 @@ class DDS:
 		is_fixed_dict = {}
 		for value in self.values:
 			is_fixed_dict[value] = is_fixed(value, self.function, *self.args, **self.kwargs)
+		return is_fixed_dict
 
 
-	def search_fixed_points(self):
+	def search_fixed_points(self, method = None, tol = 1.48e-08):
 		"""Method that searches for fixed points.
-
+		Args:
+			method (string, optional): Method to use to calculate fixed points:
+							if 'newton' then uses SciPy's newthon-raphson method with 
+							self.values as initial values. self.fprime must be set.
+							
+							Uses Fixed point method otherwise.
 		Returns:
 			dict: dictionary with values as keys and dict values as follows:
 				if fixed point is found, tuple with value and number of iterations is return, 
 				tuple with last f^k(x) and None otherwise
 		"""
 		fixed_dict = {}
-		for value in self.values:
-			fixed_dict[value] = fixed_point(value, self.function, self.stop_iterations, *self.args, **self.kwargs)
+		if method == 'newton':
+			aux_roots = lambda x : self.function(x, *self.args, **self.kwargs) - x
+			aux_roots_prime = lambda x: self.fprime(x, *self.args, **self.kwargs) - 1
+			for value in self.values:
+				rootresults = newton(aux_roots, value, fprime = aux_roots_prime, tol = tol,
+									maxiter = self.stop_iterations, full_output = True, disp = False)[1]
+				fixed_dict[value] = (rootresults.root, rootresults.function_calls)
+		else:
+			for value in self.values:
+				fixed_dict[value] = fixed_point(value, self.function, self.stop_iterations, 
+									*self.args, **self.kwargs)
 		return fixed_dict
 
 
-	def plot_f(self, display_mode = 'show', savefig_name = '', title = None, range = (-10,10), num = 100, figsize=(10,8)):
+	def plot_f(self, display_mode = 'show', savefig_name = 'image.png', title = None, range = (-10,10), num = 100, 
+					figsize=(10,8),xlim = (-10,10),ylim = (-10,10)):
 		"""Method to plot the function of DDS in a smooth way
 
 		Args:
@@ -317,10 +332,11 @@ class DDS:
 		"""
 		
 		plot.plot_function(self.function, display_mode, savefig_name = savefig_name, title = title, 
-							range = range, num = num, figsize=figsize, *self.args, **self.kwargs)
+							range = range, num = num, figsize=figsize, xlim = xlim, ylim = ylim, *self.args, **self.kwargs)
+
 	
 	def plot_dots(self, display_mode = 'show', savefig_name = 'image.png', title = None, range = (-10,10), 
-				num = 100, figsize=(10,8), xlim = (-10,10), ylim = (-10,10), *args, **kwargs):
+				num = 100, figsize=(10,8), xlim = (-10,10), ylim = (-10,10)):
 		"""Method to plot dots of the function in DDS
 
 		Args:
@@ -381,3 +397,26 @@ class DDS:
 		ordered_orbits = [self.orbits[value] for value in self.values]
 		plot.plot_vertical_orbits(self.values, ordered_orbits, display_mode = display_mode, 
 				savefig_name = savefig_name, title = title, figsize = figsize, fontsize = fontsize)
+
+	
+	def plot_directed_orbits(self, prog  = 'dot', figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
+						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
+		"""Method to plot a set of directed orbits, if the orbit converges into another orbit, the same path of convergence is used.
+
+		Args:
+			prog (str, optional): Type of plot from graphviz_layout function. Defaults to 'dot'.
+			figsize (tuple, optional): size (x,y) of the plot. Defaults to (10,8).
+			connectionstyle (str, optional): type of connection between nodes. Defaults to 'arc3, rad = 0'.
+			display_mode (str, optional): Way to show the image:
+										- 'show' to print the image otherwise stores image on path given
+											by savefig_name. Defaults to 'show'.
+			savefig_name (str, optional): path and name to store the image. Defaults to ''.
+			node_size (int, optional): Size of the node. Defaults to 500.
+			font_size (int, optional): Size of label inside node. Defaults to 12.
+			node_color (str, optional): color of the node. Defaults to 'white'.
+			edgecolors (str, optional): color of the edge. Defaults to 'black'.
+			width (int, optional): width of the connectors. Defaults to 2.
+		"""
+
+		plot.plot_directed_orbits(list(self.orbits.values()), prog = prog, value_format = "{:.0f}", figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
+						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)

@@ -401,8 +401,9 @@ class CollatzProblem:
 		plot.plot_vertical_orbits(self.values, orbits_ordered, display_mode = display_mode, 
 				savefig_name = savefig_name, title = title, figsize = figsize, fontsize = fontsize)
 
-	def plot_directed_orbit(self, value, prog = 'neato', figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
-						node_size = 500, font_size = 12, node_color = 'white', edgecolors = 'black', width = 2):
+	def plot_directed_orbit(self, value, prog = 'neato', value_format = "{:.0f}", figsize = (10,8), connectionstyle = 'arc3, rad = 0', 
+						display_mode = 'show', savefig_name = '', node_size = 500, font_size = 12, node_color = 'white', 
+						edgecolors = 'black', width = 2):
 		"""Method to plot the directed graph of an orbit from a given value
 
 		Args:
@@ -421,7 +422,7 @@ class CollatzProblem:
 			width (int, optional): width of the connectors. Defaults to 2.
 		"""
 
-		plot.plot_directed_orbit(self.orbits[value], prog = prog, figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
+		plot.plot_directed_orbit(self.orbits[value], prog = prog,value_format = value_format, figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
 						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)
 
 	def plot_directed_orbits(self, prog  = 'dot', figsize = (10,8), connectionstyle = 'arc3, rad = 0', display_mode = 'show', savefig_name = '',
