@@ -87,6 +87,92 @@ def plot_function(func, display_mode = 'show',
 		plt.savefig(savefig_name)
 
 
+def plot_function_dots(func,
+				dots,
+				constant = None,
+				display_mode = 'show', 
+				savefig_name = 'image.png', 
+				title = None, 
+				range = (-10,10), 
+				num = 100, 
+				figsize=(10,8),
+				xlim = (-10,10),
+				ylim = (-10,10), 
+				*args, **kwargs):
+
+	# linearly spaced numbers
+	x = np.linspace(range[0], range[1], num)
+	y = [func(value, *args, **kwargs) for value in x]
+	y_dots = [func(value, *args, **kwargs) for value in dots]
+
+	fig = plt.figure(figsize=figsize)
+	ax = fig.add_subplot(1, 1, 1)
+	ax.set_title(title, fontsize = figsize[0]*3)
+	ax.spines['left'].set_position('zero')
+	ax.spines['bottom'].set_position('zero')
+	ax.spines['right'].set_color('none')
+	ax.spines['top'].set_color('none')
+	ax.xaxis.set_ticks_position('bottom')
+	ax.yaxis.set_ticks_position('left')
+	ax.grid()
+
+	# plot the function
+	plt.xlim(xlim)
+	plt.ylim(ylim)
+	if constant:
+		plt.plot(x, [constant]*len(x), 'gray')
+		plt.plot(x, [constant*-1]*len(x), 'gray')
+	plt.plot(x, y, 'r')
+	plt.scatter(dots, y_dots, color = 'b')
+
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
+
+
+def plot_fixed(func,
+				fixed,
+				identity = True,
+				display_mode = 'show', 
+				savefig_name = 'image.png', 
+				title = None, 
+				range = (-10,10), 
+				num = 100, 
+				figsize=(10,8),
+				xlim = (-10,10),
+				ylim = (-10,10), 
+				*args, **kwargs):
+
+	# linearly spaced numbers
+	x = np.linspace(range[0], range[1], num)
+	y = [func(value, *args, **kwargs) for value in x]
+
+	fig = plt.figure(figsize=figsize)
+	ax = fig.add_subplot(1, 1, 1)
+	ax.set_title(title, fontsize = figsize[0]*3)
+	ax.spines['left'].set_position('zero')
+	ax.spines['bottom'].set_position('zero')
+	ax.spines['right'].set_color('none')
+	ax.spines['top'].set_color('none')
+	ax.xaxis.set_ticks_position('bottom')
+	ax.yaxis.set_ticks_position('left')
+	ax.grid()
+
+	# plot the function
+	plt.xlim(xlim)
+	plt.ylim(ylim)
+	if identity:
+		plt.plot(x, x, 'gray')
+	plt.plot(x, y, 'r')
+	plt.scatter(fixed, fixed, color = 'b')
+
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
+
+
 def plot_orbit(orbit_list, function_name = 'f', display_mode = 'show', 
 				label_data = False, savefig_name = 'image.png', title = None, 
 				marker = 'o', figsize = (10,8)):

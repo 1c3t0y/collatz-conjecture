@@ -1,5 +1,5 @@
 from collatz import plot
-from scipy.optimize import newton
+from scipy.optimize import newton, bisect
 
 def orbit(x0, function, iterations, *args, **kwargs):
 	"""This function computes the orbit of a initial value x_0 over a 
@@ -145,9 +145,9 @@ def fixed_point(x0, function, stop_iterations = 100, *args, **kwargs):
 	x = x0
 	for i in range(stop_iterations):
 		if is_fixed(x, function, *args, **kwargs):
-			return x, i
+			return x
 		x = function(x, *args, **kwargs)
-	return x, None
+	return None
 
 
 def same_orbit_length(values, function, stop_iterations, *args, **kwargs):
@@ -288,7 +288,7 @@ class DDS:
 		return is_fixed_dict
 
 
-	def search_fixed_points(self, method = None, tol = 1.48e-08):
+	def search_fixed_points(self, method = None, tol = 1.48e-08, sec_epsilon = 0.01, bisect_values = [(-5, -4),(-4,-3)]):
 		"""Method that searches for fixed points.
 		Args:
 			method (string, optional): Method to use to calculate fixed points:
@@ -301,18 +301,26 @@ class DDS:
 				if fixed point is found, tuple with value and number of iterations is return, 
 				tuple with last f^k(x) and None otherwise
 		"""
-		fixed_dict = {}
+		aux_roots = lambda x: self.function(x, *self.args, **self.kwargs) - x
+		aux_roots_prime = lambda x: self.fprime(x, *self.args, **self.kwargs) - 1
+
 		if method == 'newton':
-			aux_roots = lambda x : self.function(x, *self.args, **self.kwargs) - x
-			aux_roots_prime = lambda x: self.fprime(x, *self.args, **self.kwargs) - 1
-			for value in self.values:
-				rootresults = newton(aux_roots, value, fprime = aux_roots_prime, tol = tol,
-									maxiter = self.stop_iterations, full_output = True, disp = False)[1]
-				fixed_dict[value] = (rootresults.root, rootresults.function_calls)
+			fixed_dict = {value : newton(aux_roots, value, fprime = aux_roots_prime, tol = tol, maxiter = self.stop_iterations, 
+							disp = False)
+							for value in self.values}
+
+		elif method == 'secant':
+			fixed_dict = {value : newton(aux_roots, x0 = value - sec_epsilon, x1 = value + sec_epsilon, tol = tol, 
+							maxiter = self.stop_iterations, disp = False)
+							for value in self.values}
+
+		elif method == 'bisect':
+			fixed_dict = {values : bisect(aux_roots, values[0], values[1], xtol=tol, maxiter=self.stop_iterations, disp=False)
+							for values in bisect_values}
+
 		else:
-			for value in self.values:
-				fixed_dict[value] = fixed_point(value, self.function, self.stop_iterations, 
-									*self.args, **self.kwargs)
+			fixed_dict = {value : fixed_point(value, self.function, self.stop_iterations, *self.args, **self.kwargs)
+							for value in self.values}
 		return fixed_dict
 
 
@@ -353,6 +361,54 @@ class DDS:
 		"""
 		
 		plot.plot_dots(self.function, display_mode = display_mode, savefig_name = savefig_name, title = title,
+			range = range, num = num, figsize = figsize, xlim = xlim, ylim = ylim, *self.args, **self.kwargs)
+
+
+	def plot_function_dots(self, dots, constant = None, display_mode = 'show', savefig_name = 'image.png', title = None, 
+							range = (-10,10), num = 100, figsize=(10,8), xlim = (-10,10), ylim = (-10,10), *args, **kwargs):
+		"""Method to plot the points (x, f(x)) and the function in DDS
+
+		Args:
+			dots (list, optional): List with the x values to plot (x, f(x)).
+			display_mode (str, optional): Way to show the image:
+										- 'show' to print the image otherwise stores image on path given
+											by savefig_name. Defaults to 'show'.
+			savefig_name (str, optional): path and name to store the image. Defaults to ''.
+			title (str, optional): Title oft the image. Defaults to ''.
+			range (tuple, optional): range of the plot. Defaults to (-10,10).
+			num (int, optional): Num of dots to be generated between the range. Defaults to 100.
+			figsize (tuple, optional): Size x,y of the image. Defaults to (10,8).
+			xlim (tuple, optional): limits of the x axis. Defaults to (-10,10).
+			ylim (tuple, optional): limits of the y axis. Defaults to (-10,10).
+		"""
+		plot.plot_function_dots(self.function, dots = dots, constant = constant, display_mode = display_mode,  savefig_name = savefig_name,  
+								title = title, range = range,  num = num,  figsize=figsize, 
+								xlim = xlim, ylim = ylim,  *args, **kwargs)
+
+	def plot_fixed(self, fixed = None,  identity = True, display_mode = 'show', savefig_name = 'image.png', title = None, 
+				range = (-10,10), num = 100, figsize=(10,8), xlim = (-10,10), ylim = (-10,10)):
+		"""Method to plot the identity function, fixed points and the function in DDS
+
+		Args:
+			fixed (list, optional): List with the fixed points of the DDS if None, fixed points are calculated by newton method.
+			display_mode (str, optional): Way to show the image:
+										- 'show' to print the image otherwise stores image on path given
+											by savefig_name. Defaults to 'show'.
+			savefig_name (str, optional): path and name to store the image. Defaults to ''.
+			title (str, optional): Title oft the image. Defaults to ''.
+			range (tuple, optional): range of the plot. Defaults to (-10,10).
+			num (int, optional): Num of dots to be generated between the range. Defaults to 100.
+			figsize (tuple, optional): Size x,y of the image. Defaults to (10,8).
+			xlim (tuple, optional): limits of the x axis. Defaults to (-10,10).
+			ylim (tuple, optional): limits of the y axis. Defaults to (-10,10).
+		"""
+		
+		if not fixed:
+			fixed = self.search_fixed_points(method = 'newton').values()
+			fixed = sorted(list(set([value for value in fixed])))
+			fixed = [fixed[i] for i in range(0, len(fixed)-1) if abs(fixed[i+1] - fixed[i]) > 1e-06]
+
+		plot.plot_fixed(self.function, fixed, identity = identity, display_mode = display_mode, savefig_name = savefig_name, title = title,
 			range = range, num = num, figsize = figsize, xlim = xlim, ylim = ylim, *self.args, **self.kwargs)
 
 
