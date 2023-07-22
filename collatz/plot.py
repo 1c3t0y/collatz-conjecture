@@ -187,7 +187,7 @@ def plot_orbit(orbit_list, function_name = 'f', display_mode = 'show',
 
 	plt.plot(x, orbit_list, marker = marker)
 	plt.ylabel(r"$" + function_name + r"^{k}(x)$", fontsize = figsize[0]*1.5)
-	plt.xlabel("Iterations", fontsize = figsize[1]*1.5)
+	plt.xlabel("mandelbrot_set", fontsize = figsize[1]*1.5)
 	plt.xticks(fontsize = figsize[0]*1.5)
 	plt.yticks(fontsize = figsize[1]*1.5)
 
@@ -318,10 +318,59 @@ def plot_directed_orbits(orbits_list, prog  = 'dot', value_format = "{:.2f}", fi
 	else:
 		plt.savefig(savefig_name)
 
-def plot_iterations(initial_values, periods_list, display_mode = 'Show', savefig_name = 'image.png',figsize = (10,8), *args, **kwargs):
+
+def plot_mandelbrot_set(initial_values, periods_list, display_mode = 'Show', savefig_name = 'image.png',figsize = (10,8), *args, **kwargs):
 	
 	plt.figure(figsize=figsize)
 	plt.scatter(initial_values, periods_list, *args, **kwargs)
+
+	if display_mode == 'show':
+		plt.show()
+	else:
+		plt.savefig(savefig_name)
+
+
+def plot_fractal(mandelbrot_set, xrange, yrange, display_mode = 'show', savefig_name = 'image.png', figsize = (50,10), 
+		cmap = 'inferno', labels_size = (20, 20), ticks_size = (20, 20)):
+	
+	plt.rcParams["figure.figsize"] = figsize
+	# Objects for color bar
+	fig = plt.figure()
+	ax = plt.axes() 
+
+	im = plt.imshow(mandelbrot_set, cmap=cmap, interpolation = 'spline16', 
+			extent = (xrange[0], xrange[1], yrange[0], yrange[1]), origin = 'lower')
+
+	#axes labels
+	plt.xlabel('Re(z)', fontsize = labels_size[0])
+	plt.ylabel('Im(z)', fontsize = labels_size[0])
+
+	#ticks fontsize
+	plt.xticks(fontsize=ticks_size[0])
+	plt.yticks(fontsize=ticks_size[1])   
+
+	if mandelbrot_set.shape[0] < mandelbrot_set.shape[1]:
+		# sets color bar horizontal
+		cax = fig.add_axes([ax.get_position().x0,
+					ax.get_position().y0-0.2,
+					ax.get_position().width,
+					0.02])
+		orientation = 'horizontal'
+		tickssize = ticks_size[0]
+		labelsize = labels_size[0]
+	else:
+		# sets color bar vertical
+		cax = fig.add_axes([ax.get_position().x1+0.01,
+					ax.get_position().y0,
+					0.02,
+					ax.get_position().height])
+		orientation = 'vertical'
+		tickssize = ticks_size[1]
+		labelsize = labels_size[1]
+		
+	cbar = plt.colorbar(im, cax = cax, orientation = orientation)
+	cbar.ax.tick_params(labelsize=tickssize)
+	cbar.set_label(label='Iteraciones',size=labelsize)
 
 	if display_mode == 'show':
 		plt.show()

@@ -1,3 +1,5 @@
+import numpy as np
+
 from collatz import plot
 from scipy.optimize import newton, bisect
 
@@ -177,6 +179,75 @@ def same_orbit_length(values, function, stop_iterations, *args, **kwargs):
 	return len_dict
 
 
+def mandelbrot_set(function, xrange, yrange, stop_iterations, threshold = 1, diverge_method = 'abs', julia = False, *args, **kwargs):
+	"""Function to calculate the number of iterations of a mandelbrot (or julia) set. 
+
+	Args:
+		f (callable (numpy vectorized)): Function or callable of the set.
+		xrange (iterable): Iterable with the limits of the real part in the following order: 
+							(left limit for the x axis (real part),
+							right limit for the x axis (real part),
+							number of values to generate in the range of the two limits above).
+		yrange (iterable): Iterable with the limits of the imaginary part in the following order: 
+							(lower limit for the y axis (imaginary part),
+							upper limit for the y axis (imaginary part),
+							number of values to generate in the range of the two limits above)
+		 
+		stop_iterations (int): Max number of iterations.
+		threshold (int, optional): Threshold that represents when the complex number is diverging . Defaults to 1.
+		diverge_method (str, optional): Type of divergence method.
+										'abs' for  abs(z) > threshold 
+										'real_and_imag' for abs(Re(z)) > threshold) and (abs(Im(z)) > threshold 
+										'real_or_imag' for abs(Re(z)) > threshold) or (abs(Im(z)) > threshold
+										'real' for abs(Re(z)) > threshold
+										'imag' for abs(Im(z)) > threshold
+
+		julia (bool, optional): If True, returns the iterations over f(z), if false it calculates the initial constants c
+		and iterates over f(z) + c. Defaults to False.
+
+	Returns:
+		array: Numpy array with the number of iterations that f took to diverge, array has the shapes determined by 
+		third element of xrange and yrange
+	"""
+	# Grid with the values to iterate over lower limit : upper limit : number of values
+	x, y = np.ogrid[xrange[0]: xrange[1]: xrange[2]*1j, yrange[0]: yrange[1]: yrange[2]*1j]
+
+	# Creation of the matrix with numbers to iterate 
+	z = np.transpose(x + y*1j)
+
+	if julia:
+		c = np.zeros(z.shape, dtype = z.dtype)
+	else:
+		c = z 
+
+	# If number is never reached, then divergence is assumed
+	iterations = stop_iterations + np.zeros(z.shape, dtype=np.dtype(int))
+	not_diverged = np.full(z.shape, True) # Auxiliar for numbers that haven't diverged yet
+	diverged = np.full(z.shape, False) # Auxiliar for numers that diverged.
+
+	for i in range(stop_iterations):
+		z = function(z, *args, **kwargs) + c #f^i(z) + c
+		if diverge_method == 'abs':
+			diverging = abs(z) > threshold
+		elif diverge_method == 'real_or_imag':
+			diverging = (abs(np.real(z)) > threshold) | (abs(np.imag(z)) > threshold)
+		elif diverge_method == 'real_part':
+			diverging = abs(np.real(z)) > threshold
+		elif diverge_method == 'imag_part':
+			diverging = abs(np.imag(z)) > threshold
+		else:
+			diverging = (abs(np.real(z)) > threshold) & (abs(np.imag(z)) > threshold)
+			
+		new_diverging = diverging & not_diverged
+		iterations[new_diverging] = i
+		not_diverged = np.invert(new_diverging) & not_diverged
+		
+		# prevent overflow for diverging numbers
+		diverged = diverged | new_diverging
+		z[diverged] = np.inf
+	return iterations
+
+
 
 class DDS:
 	"""
@@ -322,6 +393,42 @@ class DDS:
 			fixed_dict = {value : fixed_point(value, self.function, self.stop_iterations, *self.args, **self.kwargs)
 							for value in self.values}
 		return fixed_dict
+
+	
+	def mandelbrot_set(self, xrange, yrange, threshold = 1, diverge_method = 'abs', julia = False):
+		"""Function to calculate the number of iterations of a mandelbrot (or julia) set. 
+
+	Args:
+		xrange (iterable): Iterable with the limits of the real part in the following order: 
+							(left limit for the x axis (real part),
+							right limit for the x axis (real part),
+							number of values to generate in the range of the two limits above).
+		yrange (iterable): Iterable with the limits of the imaginary part in the following order: 
+							(lower limit for the y axis (imaginary part),
+							upper limit for the y axis (imaginary part),
+							number of values to generate in the range of the two limits above)
+		 
+		threshold (int, optional): Threshold that represents when the complex number is diverging . Defaults to 1.
+		diverge_method (str, optional): Type of divergence method.
+										'abs' for  abs(z) > threshold 
+										'real_and_imag' for abs(Re(z)) > threshold) and (abs(Im(z)) > threshold 
+										'real_or_imag' for abs(Re(z)) > threshold) or (abs(Im(z)) > threshold
+										'real' for abs(Re(z)) > threshold
+										'imag' for abs(Im(z)) > threshold
+
+		julia (bool, optional): If True, returns the iterations over f(z), if false it calculates the initial constants c
+		and iterates over f(z) + c. Defaults to False.
+
+	Returns:
+		array: Numpy array with the number of iterations that f took to diverge, array has the shapes determined by 
+		third element of xrange and yrange
+	"""
+
+		#vfunction = np.vectorize(self.function)
+
+		return mandelbrot_set(self.function, xrange, yrange, self.stop_iterations, threshold, diverge_method,
+			julia, *self.args, **self.kwargs)
+
 
 
 	def plot_f(self, display_mode = 'show', savefig_name = 'image.png', title = None, range = (-10,10), num = 100, 
@@ -476,3 +583,8 @@ class DDS:
 
 		plot.plot_directed_orbits(list(self.orbits.values()), prog = prog, value_format = "{:.0f}", figsize = figsize, connectionstyle = connectionstyle, display_mode = display_mode, savefig_name = savefig_name,
 						node_size = node_size, font_size = font_size, node_color = node_color, edgecolors = edgecolors, width = width)
+
+	def plot_fractal(self, set, xrange, yrange, display_mode = 'show', savefig_name = 'image.png', figsize = (50,10), 
+		cmap = 'inferno', labels_size = (20, 20), ticks_size = (20, 20)):
+
+		plot.plot_fractal(set, xrange, yrange, display_mode, savefig_name, figsize, cmap, labels_size, ticks_size)

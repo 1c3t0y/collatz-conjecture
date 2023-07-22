@@ -7,6 +7,11 @@ import random
 from itertools import groupby
 from operator import itemgetter
 
+def generate_complex(xrange, yrange):
+    x, y = np.ogrid[xrange[0]: xrange[1]: xrange[2]*1j, yrange[0]: yrange[1]: yrange[2]*1j]
+    return x + y*1j
+
+
 def save_dict_json(dictionary, path, filename):
 	with open(os.path.join(path, filename), 'w') as f:
 		json.dump(dictionary, f)
