@@ -76,7 +76,7 @@ def period(n, f, *args, **kwargs):
 
 
 def stopping_time_ratio(n, period):
-	""" function to calculate the stopping time ratio of a goven value under f.
+	""" function to calculate the stopping time ratio of a given value under f.
 
 	Args:
 		n (positive integer): Value to calculate stopping time ratio.
@@ -193,7 +193,7 @@ class CollatzProblem:
 	Class to explore the Collatz conjecture, a.k.a 3x + 1 problem.
 	"""
 	def __init__(self, initial_values, start = 'orbit', f = functions.collatz_function, *args, **kwargs) -> None:
-		"""init method of CollatzProblem calss
+		"""init method of CollatzProblem class
 
 		Args:
 			initial_values (list): list with the values to explore

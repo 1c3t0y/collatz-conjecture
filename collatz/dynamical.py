@@ -235,7 +235,7 @@ def mandelbrot_set(function, xrange, yrange, stop_iterations, threshold = 1, div
 			diverging = abs(np.real(z)) > threshold
 		elif diverge_method == 'imag_part':
 			diverging = abs(np.imag(z)) > threshold
-		else:
+		elif diverge_method == 'real_and_imag':
 			diverging = (abs(np.real(z)) > threshold) & (abs(np.imag(z)) > threshold)
 			
 		new_diverging = diverging & not_diverged
